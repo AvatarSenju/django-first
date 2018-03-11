@@ -3,10 +3,18 @@ from django.shortcuts import render,get_object_or_404
 #from bs4 import BeautifulSoup
 
 from .models import Post
-
+from .forms import PostForm
 # Create your views here.
 def create(request):
-    return render(request,"index.html",{"title":"to create"})
+    form =PostForm(request.POST or None)
+    if form.is_valid():
+        instance = form.save(commit = False)
+        instance.save()
+        print (request.POST.get("title"))
+    context = {
+    "form":form,
+    }
+    return render(request,"post_form.html",context)
 def details(request,id):
     instance = get_object_or_404(Post,id=id)
     context ={
