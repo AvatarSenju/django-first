@@ -1,5 +1,6 @@
-from django.http import HttpResponse
-from django.shortcuts import render,get_object_or_404
+from django.contrib import messages
+from django.http import HttpResponse, HttpResponseRedirect
+from django.shortcuts import render,get_object_or_404,redirect
 #from bs4 import BeautifulSoup
 
 from .models import Post
@@ -10,7 +11,10 @@ def create(request):
     if form.is_valid():
         instance = form.save(commit = False)
         instance.save()
-        print (request.POST.get("title"))
+        messages.success(request,"Success")
+        return HttpResponseRedirect(instance.get_absolute_url())
+    # else:
+    #     messages.error(request,"NOT DONE")
     context = {
     "form":form,
     }
@@ -22,18 +26,37 @@ def details(request,id):
     "instance":instance
     }
     return render(request,"post_details.html",context)
-def update(request):
-    return HttpResponse("index21.html")
+def update(request,id=None ):
+    instance = get_object_or_404(Post,id=id)
+    form =PostForm(request.POST or None ,instance=instance)
+    if form.is_valid():
+        instance = form.save(commit = False)
+        instance.save()
+        messages.success(request,"Success")
+        return HttpResponseRedirect(instance.get_absolute_url())
+
+    # else:
+    #     messages.error(request,"NOT DONE")
+    context ={
+    "title":instance.title,
+    "instance":instance,
+    "form":form,
+    }
+
+    return render(request,"post_form.html",context)
 def retrive(request,id=None):
     ins=get_object_or_404(Post,id=id)
     context={"title":ins.updated}
-    return render(request,"index.html",context)
-def delete(request):
-    return HttpResponse("index.htm12l")
+    return render(request,"base.html",context)
+def delete(request,id=None):
+    instance = get_object_or_404(Post,id=id)
+    messages.success(request,"Deleted")
+    instance.delete()
+    return redirect("posts:lists")
 def listss(request):
     queryset = Post.objects.all()
     context = {
     "object_list":queryset,
     "title":"List"
     }
-    return render(request,"index.html",context)
+    return render(request,"post_list.html",context)
